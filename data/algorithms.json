@@ -1,0 +1,17 @@
+{
+  "algs" : [
+    {
+      "setup": "R U R' U'",
+      "look": "x x' x' x y y' y' y",
+      "alg": "U R U' R'"
+    },{
+      "setup": "R U R' U'",
+      "look": "y' y",
+      "alg": "U F U' F'"
+    },{
+      "setup": "L' U' L U y'",
+      "look": "y' y",
+      "alg": "U' F' U F"
+    }
+  ]
+}

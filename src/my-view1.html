@@ -21,19 +21,163 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
       }
     </style>
 
-    <div class="card">
-      <div class="circle">1</div>
-      <h1>View One</h1>
-      <p>Ut labores minimum atomorum pro. Laudem tibique ut has.</p>
-      <p>Lorem ipsum dolor sit amet, per in nusquam nominavi periculis, sit elit oportere ea.Lorem ipsum dolor sit amet, per in nusquam nominavi periculis, sit elit oportere ea.Cu mei vide viris gloriatur, at populo eripuit sit.</p>
-    </div>
+    <tm-alg-view></tm-alg-view>
   </template>
 
   <script>
     class MyView1 extends Polymer.Element {
       static get is() { return 'my-view1'; }
     }
-
     window.customElements.define(MyView1.is, MyView1);
+  </script>
+</dom-module>
+
+<dom-module id="tm-alg-view">
+  <template>
+    <style include="shared-styles">
+      :host {
+        display: block;
+
+        padding: 10px;
+      }
+      .card {
+        display:inline-block;
+        float:left;
+        width:40%;
+      }
+      .small {
+        width:50%;
+      }
+      .large {
+        width:100%;
+      }
+      paper-input {
+        float:left;
+      }
+      div.inputs {
+        width:100%;
+        padding:10px;
+      }
+      paper-checkbox {
+        width:100px;
+        //float:left;
+        //display: inline-block;
+        padding:30px 0 0px 10px;
+      }
+    </style>
+
+    <iron-ajax
+    auto
+    url="../data/algorithms.json"
+    handle-as="json"
+    on-response="handleResponse"
+    last-response="{{algSet}}"
+    debounce-duration="300"></iron-ajax>
+
+    <div class="card">
+      <paper-button raised on-click="_reset">Reset</paper-button>
+      <paper-button raised on-click="_look">Look</paper-button>
+      <paper-button raised on-click="_run">Run</paper-button>
+      <paper-button raised on-click="_finish">Finish</paper-button>
+      <paper-checkbox class="small" checked="{{powerSaveMode}}">Power Save</paper-checkbox>
+      <div class="inputs">
+        <paper-input class="small" label="Size" value="{{size}}" type="number"></paper-input>
+        <paper-input class="small" label="Inspect Delay" value="{{inspectDelay}}" type="number"></paper-input>
+        <paper-input class="small" label="algorithm Delay" value="{{algDelay}}" type="number"></paper-input>
+        <paper-input class="large" label="Setup Moves" value="{{curAlg.setup}}"></paper-input>
+        <paper-input class="large" label="Look Moves" value="{{curAlg.look}}"></paper-input>
+        <paper-input class="large" label="Algorithm" value="{{curAlg.alg}}"></paper-input>
+      </div>
+    </div>
+
+    <div class="card">
+      <tm-twisty-puzzle id="puzzle" size="[[size]]" power-save-mode="[[powerSaveMode]]"
+                        alg-delay="[[algDelay]]" inspect-delay="[[inspectDelay]]"
+                        setup="[[curAlg.setup]]" look="[[curAlg.look]]" alg="[[curAlg.alg]]"></tm-twisty-puzzle>
+    </div>
+
+  </template>
+
+  <script>
+    class AlgView extends Polymer.Element {
+      static get is() { return 'tm-alg-view'; }
+      static get properties() {
+        return {
+          size: {
+            type:Number,
+            notify:true,
+            reflectToAttribute: true,
+            value:3
+          },
+          powerSaveMode: {
+            type:Boolean,
+            notify:true,
+            reflectToAttribute: true,
+            value:true
+          },
+          algDelay: {
+            type:Number,
+            notify:true,
+            reflectToAttribute: true,
+            value:2000
+          },
+          inspectDelay: {
+            type:Number,
+            notify:true,
+            reflectToAttribute: true,
+            value:2000
+          },
+          algPointer: {
+            type:Number,
+            notify:true,
+            value:0
+          },
+          curAlg: {
+            type: Object,
+            notify: true,
+            computed: '_computeAlg(algSet, algPointer)',
+            observer: '_newAlg'
+          },
+          algSet: {
+            type: Object,
+            notify: true,
+            value: null,
+            observer:'_newAlgs'
+          }
+        }
+      }
+      _newAlgs() {
+        console.log('NEW ALGS: ', this.algSet);
+        this.algPointer = 2;
+      }
+      _newAlg() {
+        console.log('NEW ALG: ', this.curAlg);
+        //this.$.puzzle.reset();
+        const self = this;
+        setTimeout(function() {
+          self.$.puzzle.inspectCube();
+        }, 2000);
+
+      }
+      _computeAlg(algSet, algPointer) {
+        if (algSet !== undefined && algSet !== null && algPointer >= 0) {
+          return algSet.algs[algPointer];
+        }
+      }
+      _finish() {
+        this.$.puzzle.finish();
+      }
+      _reset() {
+        this.$.puzzle.reset();
+      }
+      _look() {
+        this.$.puzzle.inspectCube();
+      }
+      _run() {
+        this.$.puzzle.run();
+      }
+    }
+
+    window.customElements.define(AlgView.is, AlgView);
   </script>
 </dom-module>
